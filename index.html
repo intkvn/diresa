@@ -4,12 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard Ejecución Presupuestal 2026 - DIRESA Cajamarca</title>
+    <!-- Incluir Chart.js para los gráficos modernos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700;800&display=swap');
         
         :root {
             --primary-blue: #1F497D;
             --bg-color: #f4f6f9;
+            --modern-kpi-1: #e1f5fe;
+            --modern-kpi-2: #e0e0e0;
+            --modern-kpi-3: #ffe0b2;
+            --modern-kpi-4: #e8f5e9;
+            --modern-kpi-5: #fce4ec;
         }
         
         body, html {
@@ -19,97 +27,32 @@
             background-color: var(--bg-color);
             color: #333;
             -webkit-overflow-scrolling: touch;
-            scroll-behavior: smooth; /* Smooth scrolling para los enlaces del menú */
+            scroll-behavior: smooth;
         }
         
-        /* --- NAVEGACIÓN (MENU SUPERIOR) --- */
         .navbar {
-            position: sticky;
-            top: 0;
-            background-color: var(--primary-blue);
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 40px;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: sticky; top: 0; background-color: var(--primary-blue); color: white;
+            display: flex; justify-content: space-between; align-items: center; padding: 15px 40px;
+            z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
+        .navbar-brand { font-weight: 700; font-size: 18px; letter-spacing: 0.5px; }
+        .navbar-nav { display: flex; gap: 20px; flex-wrap: wrap; }
+        .navbar-nav a { color: white; text-decoration: none; font-size: 14px; font-weight: 600; transition: opacity 0.2s; }
+        .navbar-nav a:hover { opacity: 0.7; }
         
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 18px;
-            letter-spacing: 0.5px;
-        }
+        .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; display: flex; flex-direction: column; gap: 40px; }
         
-        .navbar-nav {
-            display: flex;
-            gap: 25px;
-        }
-        
-        .navbar-nav a {
-            color: white;
-            text-decoration: none;
-            font-size: 15px;
-            font-weight: 600;
-            transition: opacity 0.2s;
-        }
-        
-        .navbar-nav a:hover {
-            opacity: 0.7;
-        }
-        
-        /* --- CONTENEDOR PRINCIPAL --- */
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-        }
-        
-        /* --- SECCIÓN 1: PORTADA --- */
-        .section-cover {
-            background: white;
-            border-radius: 12px;
-            padding: 50px 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            text-align: center;
-            /* Scroll padding para que el ancla del menú no quede oculta bajo la barra */
-            scroll-margin-top: 80px; 
-        }
-        
-        #cover-logo-container {
-            display: flex; justify-content: center; align-items: center;
-            gap: 40px; margin-bottom: 30px; flex-wrap: wrap;
-        }
+        .section-cover { background: white; border-radius: 12px; padding: 50px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; scroll-margin-top: 80px; }
+        #cover-logo-container { display: flex; justify-content: center; align-items: center; gap: 40px; margin-bottom: 30px; flex-wrap: wrap; }
         .cover-logo { height: 90px; width: auto; object-fit: contain; }
-
         .section-cover h1 { font-size: 52px; color: var(--primary-blue); margin: 0 0 10px 0; line-height: 1.1; }
         .section-cover h2 { font-size: 28px; color: #666; font-weight: 400; margin: 10px 0; }
         .section-cover .subtitle { margin-top: 15px; font-size: 20px; color: #888; }
         
-        /* --- ESTILOS COMUNES --- */
-        .section-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            scroll-margin-top: 80px;
-        }
+        .section-card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); scroll-margin-top: 80px; }
+        .header-bar { background-color: #4A7ebb; color: white; width: 100%; padding: 15px; box-sizing: border-box; text-align: center; font-size: 22px; font-weight: 600; border-radius: 6px; margin-bottom: 20px; text-transform: uppercase; }
         
-        .header-bar {
-            background-color: #4A7ebb; color: white; width: 100%; padding: 15px; box-sizing: border-box;
-            text-align: center; font-size: 22px; font-weight: 600; border-radius: 6px; margin-bottom: 20px;
-            text-transform: uppercase;
-        }
-        
-        .table-wrapper {
-            width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid #e0e0e0;
-            -webkit-overflow-scrolling: touch;
-        }
-        
+        .table-wrapper { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid #e0e0e0; -webkit-overflow-scrolling: touch; }
         table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; background: white; min-width: 700px; }
         table.data-table th { background-color: var(--primary-blue); color: white; padding: 12px; text-align: right; font-weight: 600; border: 1px solid #16365D; position: sticky; top:0; z-index: 10; }
         table.data-table th:first-child { text-align: left; }
@@ -120,51 +63,49 @@
         
         .td-avance { display: flex; justify-content: flex-end; align-items: center; border:none; border-right: 1px solid #e0e0e0; }
         .dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; margin-left: 8px; flex-shrink:0; }
-        .green { background-color: #28a745; box-shadow: 0 0 4px rgba(40, 167, 69, 0.6); }
-        .yellow { background-color: #ffc107; box-shadow: 0 0 4px rgba(255, 193, 7, 0.6); }
-        .red { background-color: #dc3545; box-shadow: 0 0 4px rgba(220, 53, 69, 0.6); }
+        .green { background-color: #28a745; }
+        .yellow { background-color: #ffc107; }
+        .red { background-color: #dc3545; }
         
-        /* --- FILTROS Y KPIs --- */
         .filters-section { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #ddd; justify-content: center; }
         .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 220px; max-width: 400px; }
         .filter-group label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #555; text-align: left; }
         .filter-group select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; outline: none; cursor: pointer; background: white; }
-        
-        .kpi-container { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .kpi-card { flex: 1; min-width: 160px; color: white; border-radius: 6px; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
-        .kpi-title { font-size: 13px; font-weight: 600; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .kpi-value { font-size: 22px; font-weight: 700; }
-        .kpi-sub { font-size: 12px; margin-top: 5px; opacity: 0.9; font-weight: 600; }
-        
         .reset-btn { background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: auto; height: 40px; }
 
+        .modern-filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; }
+        .btn-modern-filter { background-color: #b3e5fc; color: #01579b; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 14px; flex-grow: 1; text-align: center; }
+        .btn-modern-filter:hover { background-color: #81d4fa; }
+        .btn-modern-filter.active { background-color: #0277bd; color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+        .modern-kpis { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .mkpi-card { flex: 1; min-width: 150px; border-radius: 8px; padding: 20px 15px; text-align: center; color: #333; display: flex; flex-direction: column; justify-content: center; }
+        .mkpi-value { font-size: 36px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; margin-bottom: 5px; color: #222; }
+        .mkpi-label { font-size: 13px; font-weight: 600; color: #666; text-transform: uppercase; }
+        
+        .bg-pastel-1 { background-color: #e1f5fe; }
+        .bg-pastel-2 { background-color: #f5f5f5; }
+        .bg-pastel-3 { background-color: #fff3e0; }
+        .bg-pastel-4 { background-color: #e8f5e9; }
+        .bg-pastel-5 { background-color: #ffebee; }
+
+        .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .chart-container { background: white; border: 1px solid #eee; border-radius: 8px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); position: relative; min-height: 300px; }
+        
         .footer { text-align: center; padding: 20px; color: #888; font-size: 14px; margin-top: 20px; }
 
-        /* ------ OPTIMIZACION PARA CELULARES ------ */
+        @media (max-width: 900px) {
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+
         @media (max-width: 768px) {
-            .navbar { flex-direction: column; padding: 15px; gap: 12px; }
-            .navbar-nav { flex-wrap: wrap; justify-content: center; gap: 12px; }
-            .navbar-nav a { font-size: 13px; }
-            
+            .navbar { padding: 15px; flex-direction: column; gap: 10px; }
+            .navbar-nav { flex-wrap: wrap; justify-content: center; }
             .dashboard-container { padding: 15px 10px; gap: 20px; }
-            .section-cover { padding: 30px 15px; scroll-margin-top: 110px; }
-            .section-card { padding: 15px; scroll-margin-top: 110px; }
-            
-            .cover-logo { height: 65px; }
-            #cover-logo-container { gap: 15px; margin-bottom: 20px; }
-            
             .section-cover h1 { font-size: 32px; }
             .section-cover h2 { font-size: 20px; }
-            .section-cover .subtitle { font-size: 16px; }
-            
-            .header-bar { font-size: 16px; padding: 12px; margin-bottom: 15px; }
-            
-            .kpi-container { gap: 10px; }
-            .kpi-card { min-width: 45%; padding: 12px 8px; }
-            .kpi-value { font-size: 18px; }
-            
-            .filter-group { min-width: 100%; max-width: 100%; }
-            .reset-btn { width: 100%; margin-top: 5px; }
+            .mkpi-value { font-size: 28px; }
+            .filter-group { min-width: 100%; }
         }
     </style>
 </head>
@@ -175,7 +116,8 @@
         <div class="navbar-brand">DIRESA CAJAMARCA • Ejecución 2026</div>
         <div class="navbar-nav">
             <a href="#portada">Portada</a>
-            <a href="#resumen-ue">Por Unidad Ejecutora</a>
+            <a href="#dashboard-moderno">Dashboard Gráfico</a>
+            <a href="#resumen-ue">Por Ejecutora</a>
             <a href="#resumen-gen">Por Genérica</a>
             <a href="#detalle">Detalle</a>
         </div>
@@ -194,6 +136,59 @@
             <div class="subtitle">Dirección Ejecutiva de Planeamiento Estratégico</div>
         </div>
 
+        <!-- SECCIÓN 5 (NUEVA): DASHBOARD MODERNO GRÁFICO -->
+        <div class="section-card" id="dashboard-moderno">
+            <div class="header-bar" style="background-color: #2c3e50;">Dashboard Gráfico General</div>
+            
+            <!-- Botones de Filtro (Tabs) -->
+            <div class="modern-filters" id="modern-filter-container">
+                <!-- Se llenarán por JS -->
+            </div>
+
+            <!-- KPIs Estilo Moderno -->
+            <div class="modern-kpis">
+                <div class="mkpi-card bg-pastel-1">
+                    <div class="mkpi-value" id="m-pia">0.00M</div>
+                    <div class="mkpi-label">PIA</div>
+                </div>
+                <div class="mkpi-card bg-pastel-2">
+                    <div class="mkpi-value" id="m-pim">0.00M</div>
+                    <div class="mkpi-label">PIM</div>
+                </div>
+                <div class="mkpi-card bg-pastel-3">
+                    <div class="mkpi-value" id="m-cert">0.00M</div>
+                    <div class="mkpi-label">Certificación</div>
+                </div>
+                <div class="mkpi-card bg-pastel-4">
+                    <div class="mkpi-value" id="m-dev">0.00M</div>
+                    <div class="mkpi-label">Devengado</div>
+                </div>
+                <div class="mkpi-card bg-pastel-5">
+                    <div class="mkpi-value" id="m-saldo">0.00M</div>
+                    <div class="mkpi-label">Saldo PIM</div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <canvas id="barChartGenericas"></canvas>
+                </div>
+                <div class="chart-container" style="display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                    <h3 style="margin-top:0; color:#555; font-size:16px;">% AVANCE TOTAL</h3>
+                    <div style="position:relative; width:100%; max-width: 250px;">
+                        <canvas id="gaugeChartAvance"></canvas>
+                        <div id="gauge-text" style="position:absolute; top:60%; left:50%; transform:translate(-50%, -50%); font-size:28px; font-weight:bold; color:#333;">0%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container" style="min-height: 400px;">
+                <canvas id="hbarChartEspecificas"></canvas>
+            </div>
+
+        </div>
+
         <!-- SECCIÓN 2: RESUMEN UE -->
         <div class="section-card" id="resumen-ue">
             <div class="header-bar">Ejecución Presupuestal - DIRESA Cajamarca 2026</div>
@@ -210,25 +205,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        
-    <tr>
-        <td style="text-align:left;">400. REGION CAJAMARCA-SALUD CAJAMARCA</td>
-        <td>S/ 125,970,515</td>
-        <td>S/ 145,750,920</td>
-        <td>S/ 142,680,704</td>
-        <td>S/ 75,121,492</td>
-        <td class="td-avance">51.54% <span class='dot yellow'></span></td>
-    </tr>
-    
-    <tr>
-        <td style="text-align:left;">412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA</td>
-        <td>S/ 31,686,560</td>
-        <td>S/ 37,864,771</td>
-        <td>S/ 36,785,700</td>
-        <td>S/ 24,612,231</td>
-        <td class="td-avance">65.00% <span class='dot yellow'></span></td>
-    </tr>
-    
+                        <tr><td style='text-align:left;'>400. REGION CAJAMARCA-SALUD CAJAMARCA</td><td>S/ 125,970,515</td><td>S/ 145,750,920</td><td>S/ 142,680,704</td><td>S/ 75,121,492</td><td class='td-avance'>51.54% <span class='dot yellow'></span></td></tr><tr><td style='text-align:left;'>412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA</td><td>S/ 31,686,560</td><td>S/ 37,864,771</td><td>S/ 36,785,700</td><td>S/ 24,612,231</td><td class='td-avance'>65.00% <span class='dot yellow'></span></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -237,7 +214,6 @@
         <!-- SECCIÓN 3: RESUMEN GENERICA (INTERACTIVA POR UE) -->
         <div class="section-card" id="resumen-gen">
             <div class="header-bar">Ejecución Presupuestal por Genérica de Gasto</div>
-            
             <div class="filters-section">
                 <div class="filter-group">
                     <label for="slide3-ue-filter">Filtrar por Unidad Ejecutora:</label>
@@ -246,7 +222,6 @@
                     </select>
                 </div>
             </div>
-
             <div class="table-wrapper">
                 <table class="data-table">
                     <thead>
@@ -267,7 +242,7 @@
         
         <!-- SECCIÓN 4: DETALLE ESPECÍFICA -->
         <div class="section-card" id="detalle">
-            <div class="header-bar" style="background-color: #1F497D;">Detalle Específica de Gasto</div>
+            <div class="header-bar">Detalle Específica de Gasto</div>
             
             <div class="filters-section">
                 <div class="filter-group">
@@ -283,34 +258,6 @@
                     </select>
                 </div>
                 <button class="reset-btn" onclick="resetFilters()">Limpiar Filtros</button>
-            </div>
-            
-            <div class="kpi-container">
-                <div class="kpi-card" style="background:#6c757d;">
-                    <div class="kpi-title">PIA Total</div>
-                    <div class="kpi-value" id="kpi-pia">S/ 0</div>
-                    <div class="kpi-sub" style="color: #e9ecef;">Presupuesto Inicial</div>
-                </div>
-                <div class="kpi-card" style="background:#0d6efd;">
-                    <div class="kpi-title">PIM Total</div>
-                    <div class="kpi-value" id="kpi-pim">S/ 0</div>
-                    <div class="kpi-sub" style="color: #cfe2ff;">Presupuesto Vigente</div>
-                </div>
-                <div class="kpi-card" style="background:#17a2b8;">
-                    <div class="kpi-title">Certificación</div>
-                    <div class="kpi-value" id="kpi-cert">S/ 0</div>
-                    <div class="kpi-sub" id="kpi-cert-pct" style="color: #cff4fc;">0% del PIM</div>
-                </div>
-                <div class="kpi-card" style="background:#198754;">
-                    <div class="kpi-title">Devengado</div>
-                    <div class="kpi-value" id="kpi-dev">S/ 0</div>
-                    <div class="kpi-sub" id="kpi-dev-pct" style="color: #d1e7dd;">0% del PIM</div>
-                </div>
-                <div class="kpi-card" style="background:#fd7e14;">
-                    <div class="kpi-title">Saldo por Devengar</div>
-                    <div class="kpi-value" id="kpi-saldo">S/ 0</div>
-                    <div class="kpi-sub" style="color: #ffe5d0;">Pendiente de Ejecución</div>
-                </div>
             </div>
             
             <div class="table-wrapper">
@@ -341,10 +288,15 @@
 
     <!-- DASHBOARD DATA & LOGIC -->
     <script>
+        if (typeof ChartDataLabels !== 'undefined') {
+            Chart.register(ChartDataLabels);
+        }
+
         const rawData = [{"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.CONTRATO ADMINISTRATIVO DE SERVICIOS", "especifica_det": "1.CONTRATO ADMINISTRATIVO DE SERVICIOS - INDETERMINADO", "mto_pia": 22016900, "mto_pim": 17690626, "mto_certificado": 17690626.0, "mto_compro_anual": 17690626.0, "Devengado": 8863429.129999999}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.CONTRATO ADMINISTRATIVO DE SERVICIOS", "especifica_det": "2.CONTRATO ADMINISTRATIVO DE SERVICIOS - TRANSITORIO", "mto_pia": 7919539, "mto_pim": 12214116, "mto_certificado": 12214116.0, "mto_compro_anual": 12214116.0, "Devengado": 5602891.909999999}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.ESCOLARIDAD, AGUINALDOS Y GRATIFICACIONES", "especifica_det": "1.GRATIFICACIONES", "mto_pia": 4503, "mto_pim": 16543, "mto_certificado": 16543.0, "mto_compro_anual": 16543.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.ESCOLARIDAD, AGUINALDOS Y GRATIFICACIONES", "especifica_det": "2.AGUINALDOS", "mto_pia": 561697, "mto_pim": 561697, "mto_certificado": 561697.0, "mto_compro_anual": 561697.0, "Devengado": 332863.27}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.ESCOLARIDAD, AGUINALDOS Y GRATIFICACIONES", "especifica_det": "3.BONIFICACION POR ESCOLARIDAD", "mto_pia": 527400, "mto_pim": 527400, "mto_certificado": 527400.0, "mto_compro_anual": 527400.0, "Devengado": 428662.3}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.ESCOLARIDAD, AGUINALDOS Y GRATIFICACIONES", "especifica_det": "4.AGUINALDOS DE CONTRATO ADMINISTRATIVO DE SERVICIOS", "mto_pia": 496200, "mto_pim": 496200, "mto_certificado": 496200.0, "mto_compro_anual": 496200.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.GASTOS VARIABLES Y OCASIONALES", "especifica_det": "1.COMPENSACION POR TIEMPO DE SERVICIOS DEL REGIMEN LABORAL PRIVADO Y REGIMEN DEL SERVICIO CIVIL", "mto_pia": 0, "mto_pim": 7382, "mto_certificado": 7382.0, "mto_compro_anual": 7382.0, "Devengado": 2555.65}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.GASTOS VARIABLES Y OCASIONALES", "especifica_det": "2.COMPENSACION POR TIEMPO DE SERVICIOS DE OTROS REG\u00cdMENES", "mto_pia": 464784, "mto_pim": 413672, "mto_certificado": 413672.0, "mto_compro_anual": 413672.0, "Devengado": 370748.96}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.GASTOS VARIABLES Y OCASIONALES", "especifica_det": "4.ASIGNACION POR CUMPLIR 25 O 30 A\u00d1OS", "mto_pia": 104095, "mto_pim": 145580, "mto_certificado": 145580.0, "mto_compro_anual": 145580.0, "Devengado": 144687.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.GASTOS VARIABLES Y OCASIONALES", "especifica_det": "6.COMPENSACION VACACIONAL (VACACIONES TRUNCAS) AL PERSONAL ACTIVO", "mto_pia": 152205, "mto_pim": 31156, "mto_certificado": 31156.0, "mto_compro_anual": 31156.0, "Devengado": 13847.59}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.GASTOS VARIABLES Y OCASIONALES", "especifica_det": "7.VACACIONES TRUNCAS PERSONAL CAS", "mto_pia": 0, "mto_pim": 155642, "mto_certificado": 155642.0, "mto_compro_anual": 155642.0, "Devengado": 112980.25}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.OBLIGACIONES DEL EMPLEADOR", "especifica_det": "12.CONTRIBUCIONES POR EL SEGURO COMPLEMENTARIO DE TRABAJO DE RIESGO", "mto_pia": 208692, "mto_pim": 442692, "mto_certificado": 442692.0, "mto_compro_anual": 442692.0, "Devengado": 315602.24}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.OBLIGACIONES DEL EMPLEADOR", "especifica_det": "13.CONTRIBUCIONES A ESSALUD DEL PERSONAL ADMINISTRATIVO", "mto_pia": 347746, "mto_pim": 478655, "mto_certificado": 478655.0, "mto_compro_anual": 478655.0, "Devengado": 197327.11}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.OBLIGACIONES DEL EMPLEADOR", "especifica_det": "14.CONTRIBUCIONES A ESSALUD DE REG\u00cdMENES ESPECIALES Y OTROS REG\u00cdMENES", "mto_pia": 3094867, "mto_pim": 3182314, "mto_certificado": 3182314.0, "mto_compro_anual": 3182314.0, "Devengado": 1948665.71}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.OBLIGACIONES DEL EMPLEADOR", "especifica_det": "15.CONTRIBUCIONES A ESSALUD DE CONTRATO ADMINISTRATIVO DE SERVICIOS", "mto_pia": 2007537, "mto_pim": 1886886, "mto_certificado": 1886886.0, "mto_compro_anual": 1886886.0, "Devengado": 991427.1699999999}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.OBLIGACIONES DEL EMPLEADOR", "especifica_det": "3.APORTES A LOS FONDOS DE PENSIONES", "mto_pia": 767759, "mto_pim": 767759, "mto_certificado": 767759.0, "mto_compro_anual": 767759.0, "Devengado": 678446.18}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.OBLIGACIONES DEL EMPLEADOR", "especifica_det": "6.OTRAS CONTRIBUCIONES DEL EMPLEADOR", "mto_pia": 175737, "mto_pim": 175898, "mto_certificado": 175898.0, "mto_compro_anual": 175898.0, "Devengado": 142262.43}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.PERSONAL ADMINISTRATIVO", "especifica_det": "2.PERSONAL ADMINISTRATIVO NOMBRADO (REGIMEN PUBLICO)", "mto_pia": 2454608, "mto_pim": 2540409, "mto_certificado": 2540409.0, "mto_compro_anual": 2540409.0, "Devengado": 1431691.43}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.PERSONAL ADMINISTRATIVO", "especifica_det": "3.PERSONAL CON CONTRATO A PLAZO FIJO (REGIMEN LABORAL PUBLICO)", "mto_pia": 321014, "mto_pim": 781341, "mto_certificado": 781341.0, "mto_compro_anual": 781341.0, "Devengado": 463120.08}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.PERSONAL ADMINISTRATIVO", "especifica_det": "4.PERSONAL CON CONTRATO A PLAZO INDETERMINADO (REGIMEN LABORAL PRIVADO)", "mto_pia": 27014, "mto_pim": 87794, "mto_certificado": 87794.0, "mto_compro_anual": 87794.0, "Devengado": 29896.660000000003}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.PROFESIONALES DE LA SALUD", "especifica_det": "1.PERSONAL NOMBRADO", "mto_pia": 37750637, "mto_pim": 41404240, "mto_certificado": 41404240.0, "mto_compro_anual": 41395375.120000005, "Devengado": 21070759.29}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.PROFESIONALES DE LA SALUD", "especifica_det": "2.PERSONAL CONTRATADO", "mto_pia": 6503574, "mto_pim": 6503574, "mto_certificado": 6503574.0, "mto_compro_anual": 6503574.0, "Devengado": 1656424.96}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.PROFESIONALES DE LA SALUD", "especifica_det": "3.PERSONAL SERUMS", "mto_pia": 1625940, "mto_pim": 1625940, "mto_certificado": 1625940.0, "mto_compro_anual": 1625940.0, "Devengado": 1172906.73}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "2.NO PROFESIONALES DE LA SALUD", "especifica_det": "1.PERSONAL NOMBRADO", "mto_pia": 8354834, "mto_pim": 9253817, "mto_certificado": 9253817.0, "mto_compro_anual": 9253817.0, "Devengado": 6857315.21}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "2.NO PROFESIONALES DE LA SALUD", "especifica_det": "2.PERSONAL CONTRATADO", "mto_pia": 1622205, "mto_pim": 1622205, "mto_certificado": 1622205.0, "mto_compro_anual": 1622205.0, "Devengado": 600485.5800000001}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "2.OTRAS RETRIBUCIONES Y COMPLEMENTOS", "especifica_det": "1.ASIGNACION A FONDOS PARA PERSONAL", "mto_pia": 4438833, "mto_pim": 4438833, "mto_certificado": 4438833.0, "mto_compro_anual": 4438833.0, "Devengado": 3137782.8899999997}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "3.OTRAS RETRIBUCIONES Y COMPLEMENTOS", "especifica_det": "1.GUARDIAS HOSPITALARIAS", "mto_pia": 2332920, "mto_pim": 2332920, "mto_certificado": 2332920.0, "mto_compro_anual": 2332920.0, "Devengado": 1344153.91}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "3.OTRAS RETRIBUCIONES Y COMPLEMENTOS", "especifica_det": "3.BONIFICACIONES O ENTREGAS ECONOMICAS AL PUESTO DE PROFESIONALES DE LA SALUD", "mto_pia": 3189010, "mto_pim": 3189010, "mto_certificado": 3189010.0, "mto_compro_anual": 3189010.0, "Devengado": 2020514.7000000002}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "3.OTRAS RETRIBUCIONES Y COMPLEMENTOS", "especifica_det": "4.BONIFICACIONES O ENTREGAS  ECON\u00d3MICAS AL PUESTO DE NO PROFESIONALES DE LA SALUD", "mto_pia": 1975367, "mto_pim": 1975367, "mto_certificado": 1975367.0, "mto_compro_anual": 1975367.0, "Devengado": 1083698.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "3.OTROS GASTOS VARIABLES Y OCASIONALES", "especifica_det": "13.OTROS BONOS EXTRAORDINARIOS PERSONAL ACTIVO", "mto_pia": 0, "mto_pim": 14200, "mto_certificado": 14200.0, "mto_compro_anual": 14200.0, "Devengado": 14200.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "3.OTROS GASTOS VARIABLES Y OCASIONALES", "especifica_det": "14.OTROS BONOS EXTRAORDINARIOS PERSONAL CAS", "mto_pia": 0, "mto_pim": 65500, "mto_certificado": 65500.0, "mto_compro_anual": 65500.0, "Devengado": 65500.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "2.PENSIONES Y OTRAS PRESTACIONES SOCIALES", "especifica": "1.PENSIONES", "especifica_det": "1.REGIMEN DE PENSIONES DL. 20530", "mto_pia": 2203212, "mto_pim": 2251452, "mto_certificado": 2251452.0, "mto_compro_anual": 2251452.0, "Devengado": 1518727.1099999999}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "2.PENSIONES Y OTRAS PRESTACIONES SOCIALES", "especifica": "2.OTRAS COMPENSACIONES", "especifica_det": "1.ESCOLARIDAD, AGUINALDOS Y GRATIFICACIONES", "mto_pia": 210000, "mto_pim": 210000, "mto_certificado": 210000.0, "mto_compro_anual": 210000.0, "Devengado": 95583.19}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "2.PENSIONES Y OTRAS PRESTACIONES SOCIALES", "especifica": "2.OTRAS COMPENSACIONES", "especifica_det": "2.BONIFICACION FONAHPU - D.L. 20530", "mto_pia": 10880, "mto_pim": 10880, "mto_certificado": 10880.0, "mto_compro_anual": 10880.0, "Devengado": 5759.639999999999}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "2.PENSIONES Y OTRAS PRESTACIONES SOCIALES", "especifica": "3.OTRAS PRESTACIONES DEL EMPLEADOR", "especifica_det": "1.GASTOS DE SEPELIO Y LUTO DEL PERSONAL ACTIVO", "mto_pia": 45000, "mto_pim": 57000, "mto_certificado": 45000.0, "mto_compro_anual": 45000.0, "Devengado": 45000.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "2.PENSIONES Y OTRAS PRESTACIONES SOCIALES", "especifica": "3.OTRAS PRESTACIONES DEL EMPLEADOR", "especifica_det": "2.GASTOS DE SEPELIO Y LUTO DEL PERSONAL PENSIONISTA", "mto_pia": 6000, "mto_pim": 6000, "mto_certificado": 6000.0, "mto_compro_anual": 6000.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.ALIMENTOS Y BEBIDAS", "especifica_det": "1.ALIMENTOS Y BEBIDAS PARA CONSUMO HUMANO", "mto_pia": 335299, "mto_pim": 568512, "mto_certificado": 37106.95, "mto_compro_anual": 35808.85, "Devengado": 28324.7}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.ALQUILERES DE MUEBLES E INMUEBLES", "especifica_det": "1.DE EDIFICIOS Y ESTRUCTURAS", "mto_pia": 73000, "mto_pim": 408456, "mto_certificado": 401991.0, "mto_compro_anual": 401991.0, "Devengado": 190461.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.ALQUILERES DE MUEBLES E INMUEBLES", "especifica_det": "2.DE VEHICULOS", "mto_pia": 40000, "mto_pim": 52500, "mto_certificado": 45500.0, "mto_compro_anual": 43900.0, "Devengado": 43900.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.ALQUILERES DE MUEBLES E INMUEBLES", "especifica_det": "3.DE MOBILIARIO Y SIMILARES", "mto_pia": 0, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.ALQUILERES DE MUEBLES E INMUEBLES", "especifica_det": "4.DE MAQUINARIAS Y EQUIPOS", "mto_pia": 52000, "mto_pim": 54000, "mto_certificado": 54000.0, "mto_compro_anual": 54000.0, "Devengado": 28946.95}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.ALQUILERES DE MUEBLES E INMUEBLES", "especifica_det": "99.DE OTROS BIENES Y ACTIVOS", "mto_pia": 5000, "mto_pim": 1750, "mto_certificado": 700.0, "mto_compro_anual": 700.0, "Devengado": 350.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMBUSTIBLES, CARBURANTES, LUBRICANTES Y AFINES", "especifica_det": "1.COMBUSTIBLES Y CARBURANTES", "mto_pia": 500320, "mto_pim": 908157, "mto_certificado": 794911.3300000001, "mto_compro_anual": 664515.79, "Devengado": 255679.49}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMBUSTIBLES, CARBURANTES, LUBRICANTES Y AFINES", "especifica_det": "2.GASES", "mto_pia": 27856, "mto_pim": 1451, "mto_certificado": 1451.0, "mto_compro_anual": 1451.0, "Devengado": 1451.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMBUSTIBLES, CARBURANTES, LUBRICANTES Y AFINES", "especifica_det": "3.LUBRICANTES, GRASAS Y AFINES", "mto_pia": 23562, "mto_pim": 1000, "mto_certificado": 1000.0, "mto_compro_anual": 1000.0, "Devengado": 1000.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMPRA DE OTROS BIENES", "especifica_det": "1.HERRAMIENTAS", "mto_pia": 4000, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMPRA DE OTROS BIENES", "especifica_det": "2.PRODUCTOS QUIMICOS", "mto_pia": 310472, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMPRA DE OTROS BIENES", "especifica_det": "3.LIBROS, DIARIOS, REVISTAS Y OTROS BIENES IMPRESOS NO VINCULADOS A ENSE\u00d1ANZA", "mto_pia": 126135, "mto_pim": 86594, "mto_certificado": 60119.67, "mto_compro_anual": 60119.67, "Devengado": 59264.67}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMPRA DE OTROS BIENES", "especifica_det": "99.OTROS BIENES", "mto_pia": 36730, "mto_pim": 11560, "mto_certificado": 7470.0, "mto_compro_anual": 7470.0, "Devengado": 3120.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.DE OFICINA", "especifica_det": "1.REPUESTOS Y ACCESORIOS", "mto_pia": 32000, "mto_pim": 26031, "mto_certificado": 26010.45, "mto_compro_anual": 26010.45, "Devengado": 26010.45}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.DE OFICINA", "especifica_det": "2.PAPELERIA EN GENERAL, UTILES Y MATERIALES DE OFICINA", "mto_pia": 577077, "mto_pim": 470066, "mto_certificado": 375022.21, "mto_compro_anual": 362772.13, "Devengado": 268427.66}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.ENSERES", "especifica_det": "1.ENSERES", "mto_pia": 97126, "mto_pim": 15130, "mto_certificado": 15128.849999999999, "mto_compro_anual": 15128.849999999999, "Devengado": 7407.45}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.LOCACI\u00d3N DE SERVICIOS REALIZADOS POR PERSONA NATURAL", "especifica_det": "1.LOCACI\u00d3N DE SERVICIOS REALIZADOS POR PERSONA NATURAL", "mto_pia": 3972945, "mto_pim": 6064476, "mto_certificado": 5770825.0, "mto_compro_anual": 5587351.47, "Devengado": 2798307.4699999997}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.MATERIALES Y UTILES DE ENSE\u00d1ANZA", "especifica_det": "1.LIBROS, TEXTOS Y OTROS MATERIALES IMPRESOS", "mto_pia": 3000, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.MATERIALES Y UTILES DE ENSE\u00d1ANZA", "especifica_det": "2.MATERIAL DIDACTICO, ACCESORIOS Y UTILES DE ENSE\u00d1ANZA", "mto_pia": 61000, "mto_pim": 41739, "mto_certificado": 23759.0, "mto_compro_anual": 23759.0, "Devengado": 15759.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.MATERIALES Y UTILES DE ENSE\u00d1ANZA", "especifica_det": "99.OTROS MATERIALES DIVERSOS DE ENSE\u00d1ANZA", "mto_pia": 1850, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.PRODUCTOS FARMACEUTICOS", "especifica_det": "2.MEDICAMENTOS", "mto_pia": 125000, "mto_pim": 1735897, "mto_certificado": 1615157.78, "mto_compro_anual": 1079597.78, "Devengado": 930492.88}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.PRODUCTOS FARMACEUTICOS", "especifica_det": "99.OTROS PRODUCTOS SIMILARES", "mto_pia": 0, "mto_pim": 23484, "mto_certificado": 11600.0, "mto_compro_anual": 11600.0, "Devengado": 11600.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.REPUESTOS Y ACCESORIOS", "especifica_det": "1.DE VEHICULOS", "mto_pia": 3000, "mto_pim": 3000, "mto_certificado": 2000.0, "mto_compro_anual": 2000.0, "Devengado": 2000.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.REPUESTOS Y ACCESORIOS", "especifica_det": "2.DE COMUNICACIONES Y TELECOMUNICACIONES", "mto_pia": 0, "mto_pim": 800, "mto_certificado": 735.0, "mto_compro_anual": 735.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.REPUESTOS Y ACCESORIOS", "especifica_det": "3.DE CONSTRUCCION Y MAQUINAS", "mto_pia": 0, "mto_pim": 1700, "mto_certificado": 1700.0, "mto_compro_anual": 1700.0, "Devengado": 1700.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.REPUESTOS Y ACCESORIOS", "especifica_det": "4.DE SEGURIDAD", "mto_pia": 26500, "mto_pim": 44590, "mto_certificado": 18090.0, "mto_compro_anual": 18090.0, "Devengado": 18090.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.REPUESTOS Y ACCESORIOS", "especifica_det": "99.OTROS ACCESORIOS Y REPUESTOS", "mto_pia": 100, "mto_pim": 42317, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS ADMINISTRATIVOS", "especifica_det": "1.GASTOS LEGALES Y JUDICIALES", "mto_pia": 0, "mto_pim": 1416, "mto_certificado": 1416.0, "mto_compro_anual": 1416.0, "Devengado": 1416.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS ADMINISTRATIVOS", "especifica_det": "2.GASTOS NOTARIALES", "mto_pia": 2020, "mto_pim": 500, "mto_certificado": 500.0, "mto_compro_anual": 500.0, "Devengado": 500.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS DE CONSULTORIAS Y SIMILARES DESARROLLADOS POR PERSONAS JURIDICAS", "especifica_det": "6.ESTUDIOS", "mto_pia": 0, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS DE ENERGIA ELECTRICA, AGUA Y GAS", "especifica_det": "1.SERVICIO DE SUMINISTRO DE ENERGIA ELECTRICA", "mto_pia": 682251, "mto_pim": 686454, "mto_certificado": 682250.2, "mto_compro_anual": 681733.5, "Devengado": 381973.7800000001}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS DE ENERGIA ELECTRICA, AGUA Y GAS", "especifica_det": "2.SERVICIO DE AGUA Y DESAGUE", "mto_pia": 70335, "mto_pim": 237050, "mto_certificado": 212677.0, "mto_compro_anual": 212677.0, "Devengado": 134463.1}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS DE LIMPIEZA, SEGURIDAD Y VIGILANCIA", "especifica_det": "1.SERVICIOS DE LIMPIEZA E HIGIENE", "mto_pia": 9600, "mto_pim": 293950, "mto_certificado": 293948.0, "mto_compro_anual": 259748.0, "Devengado": 259748.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS DE LIMPIEZA, SEGURIDAD Y VIGILANCIA", "especifica_det": "2.SERVICIOS DE SEGURIDAD Y VIGILANCIA", "mto_pia": 310000, "mto_pim": 228337, "mto_certificado": 228335.89, "mto_compro_anual": 125654.31, "Devengado": 62411.049999999996}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SUMINISTROS PARA MANTENIMIENTO Y REPARACION", "especifica_det": "1.PARA EDIFICIOS Y ESTRUCTURAS", "mto_pia": 1000, "mto_pim": 1000, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SUMINISTROS PARA MANTENIMIENTO Y REPARACION", "especifica_det": "2.PARA VEHICULOS", "mto_pia": 43163, "mto_pim": 37411, "mto_certificado": 24247.1, "mto_compro_anual": 24247.1, "Devengado": 24247.100000000002}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SUMINISTROS PARA USO AGROPECUARIO, FORESTAL Y VETERINARIO", "especifica_det": "1.SUMINISTROS DE USO ZOOTECNICO", "mto_pia": 4109, "mto_pim": 2109, "mto_certificado": 2109.0, "mto_compro_anual": 2109.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SUMINISTROS PARA USO AGROPECUARIO, FORESTAL Y VETERINARIO", "especifica_det": "4.FERTILIZANTES, INSECTICIDAS, FUNGICIDAS Y SIMILARES", "mto_pia": 4567, "mto_pim": 3797, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.VESTUARIO, ZAPATERIA Y ACCESORIOS, TALABARTERIA Y MATERIALES TEXTILES", "especifica_det": "1.VESTUARIO, ACCESORIOS Y PRENDAS DIVERSAS", "mto_pia": 206988, "mto_pim": 177228, "mto_certificado": 124491.9, "mto_compro_anual": 123651.9, "Devengado": 72416.9}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.VESTUARIO, ZAPATERIA Y ACCESORIOS, TALABARTERIA Y MATERIALES TEXTILES", "especifica_det": "2.TEXTILES Y ACABADOS TEXTILES", "mto_pia": 45300, "mto_pim": 24402, "mto_certificado": 19020.0, "mto_compro_anual": 19020.0, "Devengado": 14052.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.VESTUARIO, ZAPATERIA Y ACCESORIOS, TALABARTERIA Y MATERIALES TEXTILES", "especifica_det": "3.CALZADO", "mto_pia": 10000, "mto_pim": 4200, "mto_certificado": 3000.0, "mto_compro_anual": 3000.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "10.SERVICIO POR ATENCIONES Y CELEBRACIONES", "especifica_det": "1.SEMINARIOS ,TALLERES Y SIMILARES ORGANIZADOS POR LA  INSTITUCION", "mto_pia": 2000, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "10.SERVICIO POR ATENCIONES Y CELEBRACIONES", "especifica_det": "2.ATENCIONES OFICIALES Y CELEBRACIONES INSTITUCIONALES", "mto_pia": 30000, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "11.OTROS SERVICIOS", "especifica_det": "2.TRANSPORTE Y TRASLADO DE CARGA, BIENES Y MATERIALES", "mto_pia": 252890, "mto_pim": 801264, "mto_certificado": 787786.51, "mto_compro_anual": 586650.51, "Devengado": 393379.71}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "11.OTROS SERVICIOS", "especifica_det": "5.SERVICIOS DE ALIMENTACION DE CONSUMO HUMANO", "mto_pia": 320468, "mto_pim": 329781, "mto_certificado": 209364.0, "mto_compro_anual": 194964.0, "Devengado": 176474.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "11.OTROS SERVICIOS", "especifica_det": "6.SERVICIO DE IMPRESIONES, ENCUADERNACION Y EMPASTADO", "mto_pia": 318422, "mto_pim": 702981, "mto_certificado": 598631.1000000001, "mto_compro_anual": 506444.4, "Devengado": 425816.4}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "11.OTROS SERVICIOS", "especifica_det": "99.SERVICIOS DIVERSOS", "mto_pia": 364940, "mto_pim": 121440, "mto_certificado": 69000.0, "mto_compro_anual": 66920.0, "Devengado": 50630.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "14.SERVICIOS T\u00c9CNICOS Y PROFESIONALES DESARROLLADOS POR PERSONAS NATURALES", "especifica_det": "98.OTROS SERVICIOS T\u00c9CNICOS Y PROFESIONALES DESARROLLADOS POR PERSONAS NATURALES", "mto_pia": 0, "mto_pim": 396450, "mto_certificado": 389000.0, "mto_compro_anual": 371600.0, "Devengado": 301600.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.DE EDIFICACIONES, OFICINAS Y ESTRUCTURAS", "especifica_det": "1.DE EDIFICACIONES, OFICINAS Y ESTRUCTURAS", "mto_pia": 46000, "mto_pim": 735422, "mto_certificado": 544569.09, "mto_compro_anual": 544569.09, "Devengado": 391876.56}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.MATERIAL,INSUMOS,INSTRUMENTAL Y ACCESORIOS MEDICOS,QUIRURGICOS, ODONTOLOGICOS Y DE LABORATORIO", "especifica_det": "1.MATERIAL, INSUMOS, INSTRUMENTAL Y ACCESORIOS  MEDICOS, QUIRURGICOS, ODONTOLOGICOS Y DE LABORATORIO", "mto_pia": 506546, "mto_pim": 2082278, "mto_certificado": 1842504.67, "mto_compro_anual": 1827976.67, "Devengado": 1599394.93}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.SERVICIOS DE TELEFONIA E INTERNET", "especifica_det": "1.SERVICIO DE TELEFONIA MOVIL", "mto_pia": 0, "mto_pim": 151599, "mto_certificado": 138764.03, "mto_compro_anual": 17312.03, "Devengado": 9757.619999999999}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.SERVICIOS DE TELEFONIA E INTERNET", "especifica_det": "3.SERVICIO DE INTERNET", "mto_pia": 500000, "mto_pim": 780024, "mto_certificado": 775024.0, "mto_compro_anual": 775024.0, "Devengado": 656447.2}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.SERVICIOS FINANCIEROS", "especifica_det": "1.CARGOS BANCARIOS", "mto_pia": 655, "mto_pim": 100, "mto_certificado": 100.0, "mto_compro_anual": 100.0, "Devengado": 100.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.VIAJES DOMESTICOS", "especifica_det": "1.PASAJES Y GASTOS DE TRANSPORTE", "mto_pia": 146442, "mto_pim": 128545, "mto_certificado": 126799.42, "mto_compro_anual": 122856.0, "Devengado": 47797.58}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.VIAJES DOMESTICOS", "especifica_det": "2.VIATICOS Y ASIGNACIONES POR COMISION DE SERVICIO", "mto_pia": 979350, "mto_pim": 1622647, "mto_certificado": 1518557.0, "mto_compro_anual": 1463342.64, "Devengado": 1086899.44}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.VIAJES DOMESTICOS", "especifica_det": "99.OTROS GASTOS", "mto_pia": 1029674, "mto_pim": 281255, "mto_certificado": 154057.0, "mto_compro_anual": 153997.0, "Devengado": 153997.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.ASEO, LIMPIEZA Y COCINA", "especifica_det": "1.ASEO, LIMPIEZA Y TOCADOR", "mto_pia": 542397, "mto_pim": 486236, "mto_certificado": 377589.31, "mto_compro_anual": 361866.59, "Devengado": 316220.13}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.ASEO, LIMPIEZA Y COCINA", "especifica_det": "2.DE COCINA, COMEDOR Y CAFETERIA", "mto_pia": 29800, "mto_pim": 23975, "mto_certificado": 1769.0, "mto_compro_anual": 1769.0, "Devengado": 1769.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.SEGUROS", "especifica_det": "2.SEGURO DE VEHICULOS", "mto_pia": 1000, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.SEGUROS", "especifica_det": "3.SEGURO OBLIGATORIO ACCIDENTES DE TRANSITO (SOAT)", "mto_pia": 15000, "mto_pim": 13368, "mto_certificado": 13368.0, "mto_compro_anual": 13368.0, "Devengado": 418.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.SEGUROS", "especifica_det": "4.OTROS SEGUROS PERSONALES", "mto_pia": 40000, "mto_pim": 8779, "mto_certificado": 8778.9, "mto_compro_anual": 8778.9, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.SERVICIOS DE MENSAJERIA, TELECOMUNICACIONES Y OTROS AFINES", "especifica_det": "1.CORREOS Y SERVICIOS DE MENSAJERIA", "mto_pia": 46070, "mto_pim": 56044, "mto_certificado": 53343.12, "mto_compro_anual": 53343.12, "Devengado": 16468.479999999996}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.SERVICIOS DE MENSAJERIA, TELECOMUNICACIONES Y OTROS AFINES", "especifica_det": "99.OTROS SERVICIOS DE COMUNICACION", "mto_pia": 26056, "mto_pim": 22766, "mto_certificado": 22765.18, "mto_compro_anual": 22765.18, "Devengado": 8679.67}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "4.ELECTRICIDAD, ILUMINACION Y ELECTRONICA", "especifica_det": "1.ELECTRICIDAD, ILUMINACION Y ELECTRONICA", "mto_pia": 230822, "mto_pim": 60930, "mto_certificado": 52125.75, "mto_compro_anual": 50365.75, "Devengado": 46354.93}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "4.SERVICIO DE PUBLICIDAD, IMPRESIONES, DIFUSION E IMAGEN INSTITUCIONAL", "especifica_det": "1.SERVICIO DE PUBLICIDAD", "mto_pia": 62675, "mto_pim": 78675, "mto_certificado": 44905.0, "mto_compro_anual": 44905.0, "Devengado": 25640.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "4.SERVICIOS DE SALUD", "especifica_det": "1.GASTOS POR PRESTACIONES DE SALUD", "mto_pia": 76730, "mto_pim": 60806, "mto_certificado": 60805.2, "mto_compro_anual": 60805.2, "Devengado": 3130.2}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "5.DE VEHICULOS", "especifica_det": "1.DE VEHICULOS", "mto_pia": 171000, "mto_pim": 402228, "mto_certificado": 397228.0, "mto_compro_anual": 397228.0, "Devengado": 149850.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "5.SERVICIOS DE DIFUSI\u00d3N EN EL DIARIO OFICIAL", "especifica_det": "1.DIFUSI\u00d3N EN EL DIARIO OFICIAL", "mto_pia": 0, "mto_pim": 2168, "mto_certificado": 2168.0, "mto_compro_anual": 2168.0, "Devengado": 2168.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "6.DE MOBILIARIO Y SIMILARES", "especifica_det": "1.DE MOBILIARIO Y SIMILARES", "mto_pia": 0, "mto_pim": 3500, "mto_certificado": 3500.0, "mto_compro_anual": 3500.0, "Devengado": 3500.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "7.DE MAQUINARIAS Y EQUIPOS", "especifica_det": "1.DE MAQUINARIAS Y EQUIPOS", "mto_pia": 17614, "mto_pim": 202492, "mto_certificado": 114260.0, "mto_compro_anual": 93460.0, "Devengado": 42270.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "8.SERVICIOS RELACIONADOS CON SANEAMIENTO REALIZADO POR PERSONAS JUR\u00cdDICAS", "especifica_det": "1.SERVICIOS RELACIONADOS CON EL TRATAMIENTO DE AGUA", "mto_pia": 0, "mto_pim": 230001, "mto_certificado": 230000.4, "mto_compro_anual": 230000.4, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "3.BIENES Y SERVICIOS", "especifica": "99.OTROS", "especifica_det": "99.OTROS", "mto_pia": 4132, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "5.OTROS GASTOS", "especifica": "1.GASTOS POR IMPLEMENTACI\u00d3N DE LA NEGOCIACI\u00d3N COLECTIVA - NIVEL DESCENTRALIZADO", "especifica_det": "1.GASTOS POR IMPLEMENTACI\u00d3N DE LA NEGOCIACI\u00d3N COLECTIVA - NIVEL DESCENTRALIZADO POR ENTIDAD P\u00daBLICA", "mto_pia": 326372, "mto_pim": 62672, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "5.OTROS GASTOS", "especifica": "1.TRANSFERENCIAS CORRIENTES", "especifica_det": "99.A OTRAS ORGANIZACIONES", "mto_pia": 139446, "mto_pim": 51539, "mto_certificado": 51538.82, "mto_compro_anual": 51538.82, "Devengado": 51538.82}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "5.OTROS GASTOS", "especifica": "2.DERECHOS ADMINISTRATIVOS", "especifica_det": "1.DERECHOS ADMINISTRATIVOS", "mto_pia": 0, "mto_pim": 2242, "mto_certificado": 591.51, "mto_compro_anual": 591.51, "Devengado": 591.51}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "1.PARA OFICINA", "especifica_det": "2.MOBILIARIO", "mto_pia": 0, "mto_pim": 121939, "mto_certificado": 82524.0, "mto_compro_anual": 80752.13, "Devengado": 55820.21}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "2.PARA INSTALACIONES EDUCATIVAS", "especifica_det": "1.MAQUINAS Y EQUIPOS", "mto_pia": 0, "mto_pim": 30000, "mto_certificado": 30000.0, "mto_compro_anual": 30000.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "3.ACTIVOS INTANGIBLES", "especifica_det": "2.SOFTWARES", "mto_pia": 0, "mto_pim": 5226, "mto_certificado": 5226.0, "mto_compro_anual": 5226.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "3.ADQUISICION DE EQUIPOS INFORMATICOS Y DE COMUNICACIONES", "especifica_det": "1.EQUIPOS COMPUTACIONALES Y PERIFERICOS", "mto_pia": 0, "mto_pim": 3412618, "mto_certificado": 3392286.31, "mto_compro_anual": 3360387.0, "Devengado": 92851.79000000001}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "3.ADQUISICION DE EQUIPOS INFORMATICOS Y DE COMUNICACIONES", "especifica_det": "2.EQUIPOS DE COMUNICACIONES PARA REDES INFORMATICAS", "mto_pia": 0, "mto_pim": 1198176, "mto_certificado": 1198176.0, "mto_compro_anual": 1198176.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "3.ADQUISICION DE EQUIPOS INFORMATICOS Y DE COMUNICACIONES", "especifica_det": "3.EQUIPOS DE TELECOMUNICACIONES", "mto_pia": 0, "mto_pim": 7300, "mto_certificado": 6800.0, "mto_compro_anual": 6800.0, "Devengado": 6800.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "4.ADQUISICION DE MOBILIARIO, EQUIPOS Y APARATOS MEDICOS", "especifica_det": "1.MOBILIARIO", "mto_pia": 0, "mto_pim": 85238, "mto_certificado": 60798.0, "mto_compro_anual": 60798.0, "Devengado": 56299.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "4.ADQUISICION DE MOBILIARIO, EQUIPOS Y APARATOS MEDICOS", "especifica_det": "2.EQUIPOS", "mto_pia": 0, "mto_pim": 417457, "mto_certificado": 241817.8, "mto_compro_anual": 173997.8, "Devengado": 113099.8}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "4.OTROS GASTOS DIVERSOS DE ACTIVOS NO FINANCIEROS", "especifica_det": "3.GASTO POR LA CONTRATACION DE SERVICIOS", "mto_pia": 0, "mto_pim": 225500, "mto_certificado": 225500.0, "mto_compro_anual": 225500.0, "Devengado": 149000.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "9.ADQUISICION DE MAQUINARIA Y EQUIPO DIVERSOS", "especifica_det": "1.AIRE ACONDICIONADO Y REFRIGERACION", "mto_pia": 0, "mto_pim": 75890, "mto_certificado": 75890.0, "mto_compro_anual": 75890.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "9.ADQUISICION DE MAQUINARIA Y EQUIPO DIVERSOS", "especifica_det": "2.ASEO,  LIMPIEZA Y COCINA", "mto_pia": 0, "mto_pim": 440, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "9.ADQUISICION DE MAQUINARIA Y EQUIPO DIVERSOS", "especifica_det": "4.ELECTRICIDAD Y ELECTRONICA", "mto_pia": 0, "mto_pim": 60900, "mto_certificado": 57349.91, "mto_compro_anual": 57349.91, "Devengado": 32599.91}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "9.ADQUISICION DE MAQUINARIA Y EQUIPO DIVERSOS", "especifica_det": "5.EQUIPOS E INSTRUMENTOS DE MEDICION", "mto_pia": 0, "mto_pim": 305240, "mto_certificado": 229745.0, "mto_compro_anual": 222645.0, "Devengado": 172090.0}, {"unidad_ejecutora": "400. REGION CAJAMARCA-SALUD CAJAMARCA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "9.ADQUISICION DE MAQUINARIA Y EQUIPO DIVERSOS", "especifica_det": "99.MAQUINARIAS, EQUIPOS Y MOBILIARIOS DE OTRAS INSTALACIONES", "mto_pia": 0, "mto_pim": 77025, "mto_certificado": 76725.0, "mto_compro_anual": 76725.0, "Devengado": 76725.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.CONTRATO ADMINISTRATIVO DE SERVICIOS", "especifica_det": "1.CONTRATO ADMINISTRATIVO DE SERVICIOS - INDETERMINADO", "mto_pia": 8274869, "mto_pim": 5528120, "mto_certificado": 5528120.0, "mto_compro_anual": 5528120.0, "Devengado": 3184589.23}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.CONTRATO ADMINISTRATIVO DE SERVICIOS", "especifica_det": "2.CONTRATO ADMINISTRATIVO DE SERVICIOS - TRANSITORIO", "mto_pia": 2507457, "mto_pim": 3564777, "mto_certificado": 3564777.0, "mto_compro_anual": 3564777.0, "Devengado": 2382792.49}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.ESCOLARIDAD, AGUINALDOS Y GRATIFICACIONES", "especifica_det": "1.GRATIFICACIONES", "mto_pia": 0, "mto_pim": 203753, "mto_certificado": 174600.0, "mto_compro_anual": 174600.0, "Devengado": 63826.16}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.ESCOLARIDAD, AGUINALDOS Y GRATIFICACIONES", "especifica_det": "2.AGUINALDOS", "mto_pia": 142636, "mto_pim": 155136, "mto_certificado": 155136.0, "mto_compro_anual": 155136.0, "Devengado": 98390.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.ESCOLARIDAD, AGUINALDOS Y GRATIFICACIONES", "especifica_det": "3.BONIFICACION POR ESCOLARIDAD", "mto_pia": 88364, "mto_pim": 105176, "mto_certificado": 105176.0, "mto_compro_anual": 105176.0, "Devengado": 100777.82}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.ESCOLARIDAD, AGUINALDOS Y GRATIFICACIONES", "especifica_det": "4.AGUINALDOS DE CONTRATO ADMINISTRATIVO DE SERVICIOS", "mto_pia": 174600, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.GASTOS VARIABLES Y OCASIONALES", "especifica_det": "2.COMPENSACION POR TIEMPO DE SERVICIOS DE OTROS REG\u00cdMENES", "mto_pia": 107390, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.GASTOS VARIABLES Y OCASIONALES", "especifica_det": "4.ASIGNACION POR CUMPLIR 25 O 30 A\u00d1OS", "mto_pia": 20770, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.GASTOS VARIABLES Y OCASIONALES", "especifica_det": "6.COMPENSACION VACACIONAL (VACACIONES TRUNCAS) AL PERSONAL ACTIVO", "mto_pia": 45000, "mto_pim": 19672, "mto_certificado": 19164.12, "mto_compro_anual": 19164.12, "Devengado": 19164.12}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.GASTOS VARIABLES Y OCASIONALES", "especifica_det": "7.VACACIONES TRUNCAS PERSONAL CAS", "mto_pia": 0, "mto_pim": 153488, "mto_certificado": 153488.0, "mto_compro_anual": 153488.0, "Devengado": 152679.24}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.OBLIGACIONES DEL EMPLEADOR", "especifica_det": "12.CONTRIBUCIONES POR EL SEGURO COMPLEMENTARIO DE TRABAJO DE RIESGO", "mto_pia": 4025, "mto_pim": 66755, "mto_certificado": 66755.0, "mto_compro_anual": 66755.0, "Devengado": 42064.32}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.OBLIGACIONES DEL EMPLEADOR", "especifica_det": "13.CONTRIBUCIONES A ESSALUD DEL PERSONAL ADMINISTRATIVO", "mto_pia": 144976, "mto_pim": 69379, "mto_certificado": 69379.0, "mto_compro_anual": 69379.0, "Devengado": 43019.72}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.OBLIGACIONES DEL EMPLEADOR", "especifica_det": "14.CONTRIBUCIONES A ESSALUD DE REG\u00cdMENES ESPECIALES Y OTROS REG\u00cdMENES", "mto_pia": 662988, "mto_pim": 876093, "mto_certificado": 876093.0, "mto_compro_anual": 876093.0, "Devengado": 579321.27}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.OBLIGACIONES DEL EMPLEADOR", "especifica_det": "15.CONTRIBUCIONES A ESSALUD DE CONTRATO ADMINISTRATIVO DE SERVICIOS", "mto_pia": 718268, "mto_pim": 637888, "mto_certificado": 637888.0, "mto_compro_anual": 637888.0, "Devengado": 392135.52999999997}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.OBLIGACIONES DEL EMPLEADOR", "especifica_det": "6.OTRAS CONTRIBUCIONES DEL EMPLEADOR", "mto_pia": 46558, "mto_pim": 55901, "mto_certificado": 55901.0, "mto_compro_anual": 55901.0, "Devengado": 43217.17}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.PERSONAL ADMINISTRATIVO", "especifica_det": "2.PERSONAL ADMINISTRATIVO NOMBRADO (REGIMEN PUBLICO)", "mto_pia": 25800, "mto_pim": 483307, "mto_certificado": 483307.0, "mto_compro_anual": 483307.0, "Devengado": 324089.93000000005}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.PERSONAL ADMINISTRATIVO", "especifica_det": "3.PERSONAL CON CONTRATO A PLAZO FIJO (REGIMEN LABORAL PUBLICO)", "mto_pia": 10320, "mto_pim": 141589, "mto_certificado": 141589.0, "mto_compro_anual": 141589.0, "Devengado": 82483.69}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.PROFESIONALES DE LA SALUD", "especifica_det": "1.PERSONAL NOMBRADO", "mto_pia": 6611329, "mto_pim": 8706313, "mto_certificado": 8706313.0, "mto_compro_anual": 8704989.0, "Devengado": 5748715.21}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.PROFESIONALES DE LA SALUD", "especifica_det": "2.PERSONAL CONTRATADO", "mto_pia": 1300910, "mto_pim": 1125683, "mto_certificado": 1125683.0, "mto_compro_anual": 1125683.0, "Devengado": 796018.5}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "1.PROFESIONALES DE LA SALUD", "especifica_det": "3.PERSONAL SERUMS", "mto_pia": 270288, "mto_pim": 270288, "mto_certificado": 270288.0, "mto_compro_anual": 270288.0, "Devengado": 190621.43}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "2.NO PROFESIONALES DE LA SALUD", "especifica_det": "1.PERSONAL NOMBRADO", "mto_pia": 2923866, "mto_pim": 4047427, "mto_certificado": 4047427.0, "mto_compro_anual": 4047427.0, "Devengado": 2652090.4}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "2.NO PROFESIONALES DE LA SALUD", "especifica_det": "2.PERSONAL CONTRATADO", "mto_pia": 404904, "mto_pim": 558944, "mto_certificado": 558944.0, "mto_compro_anual": 558944.0, "Devengado": 379648.05}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "2.OTRAS RETRIBUCIONES Y COMPLEMENTOS", "especifica_det": "1.ASIGNACION A FONDOS PARA PERSONAL", "mto_pia": 445506, "mto_pim": 621639, "mto_certificado": 621639.0, "mto_compro_anual": 621639.0, "Devengado": 525512.8300000001}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "3.OTRAS RETRIBUCIONES Y COMPLEMENTOS", "especifica_det": "1.GUARDIAS HOSPITALARIAS", "mto_pia": 804612, "mto_pim": 832556, "mto_certificado": 832556.0, "mto_compro_anual": 832556.0, "Devengado": 541838.54}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "3.OTRAS RETRIBUCIONES Y COMPLEMENTOS", "especifica_det": "3.BONIFICACIONES O ENTREGAS ECONOMICAS AL PUESTO DE PROFESIONALES DE LA SALUD", "mto_pia": 514200, "mto_pim": 471612, "mto_certificado": 471612.0, "mto_compro_anual": 471612.0, "Devengado": 349130.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "3.OTRAS RETRIBUCIONES Y COMPLEMENTOS", "especifica_det": "4.BONIFICACIONES O ENTREGAS  ECON\u00d3MICAS AL PUESTO DE NO PROFESIONALES DE LA SALUD", "mto_pia": 351432, "mto_pim": 338758, "mto_certificado": 338758.0, "mto_compro_anual": 338758.0, "Devengado": 224882.01}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "3.OTROS GASTOS VARIABLES Y OCASIONALES", "especifica_det": "13.OTROS BONOS EXTRAORDINARIOS PERSONAL ACTIVO", "mto_pia": 0, "mto_pim": 3000, "mto_certificado": 3000.0, "mto_compro_anual": 3000.0, "Devengado": 3000.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "3.OTROS GASTOS VARIABLES Y OCASIONALES", "especifica_det": "14.OTROS BONOS EXTRAORDINARIOS PERSONAL CAS", "mto_pia": 0, "mto_pim": 23100, "mto_certificado": 23100.0, "mto_compro_anual": 23100.0, "Devengado": 22600.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "1.PERSONAL Y OBLIGACIONES SOCIALES", "especifica": "3.OTROS GASTOS VARIABLES Y OCASIONALES", "especifica_det": "99.OTRAS OCASIONALES", "mto_pia": 0, "mto_pim": 98300, "mto_certificado": 98300.0, "mto_compro_anual": 98300.0, "Devengado": 71115.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.ALIMENTOS Y BEBIDAS", "especifica_det": "1.ALIMENTOS Y BEBIDAS PARA CONSUMO HUMANO", "mto_pia": 29550, "mto_pim": 4335, "mto_certificado": 960.0, "mto_compro_anual": 960.0, "Devengado": 460.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.ALQUILERES DE MUEBLES E INMUEBLES", "especifica_det": "1.DE EDIFICIOS Y ESTRUCTURAS", "mto_pia": 69400, "mto_pim": 88900, "mto_certificado": 88900.0, "mto_compro_anual": 88900.0, "Devengado": 43440.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.ALQUILERES DE MUEBLES E INMUEBLES", "especifica_det": "2.DE VEHICULOS", "mto_pia": 0, "mto_pim": 6300, "mto_certificado": 6300.0, "mto_compro_anual": 6300.0, "Devengado": 6300.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMBUSTIBLES, CARBURANTES, LUBRICANTES Y AFINES", "especifica_det": "1.COMBUSTIBLES Y CARBURANTES", "mto_pia": 112332, "mto_pim": 289331, "mto_certificado": 281860.02, "mto_compro_anual": 181260.02, "Devengado": 62291.92}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMBUSTIBLES, CARBURANTES, LUBRICANTES Y AFINES", "especifica_det": "2.GASES", "mto_pia": 72135, "mto_pim": 72120, "mto_certificado": 71120.0, "mto_compro_anual": 71120.0, "Devengado": 11120.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMBUSTIBLES, CARBURANTES, LUBRICANTES Y AFINES", "especifica_det": "3.LUBRICANTES, GRASAS Y AFINES", "mto_pia": 2040, "mto_pim": 3840, "mto_certificado": 1800.0, "mto_compro_anual": 1800.0, "Devengado": 1800.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMPRA DE OTROS BIENES", "especifica_det": "1.HERRAMIENTAS", "mto_pia": 0, "mto_pim": 458, "mto_certificado": 458.0, "mto_compro_anual": 458.0, "Devengado": 458.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMPRA DE OTROS BIENES", "especifica_det": "2.PRODUCTOS QUIMICOS", "mto_pia": 1753, "mto_pim": 1753, "mto_certificado": 1730.8, "mto_compro_anual": 1730.8, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMPRA DE OTROS BIENES", "especifica_det": "3.LIBROS, DIARIOS, REVISTAS Y OTROS BIENES IMPRESOS NO VINCULADOS A ENSE\u00d1ANZA", "mto_pia": 51648, "mto_pim": 11644, "mto_certificado": 10486.0, "mto_compro_anual": 10486.0, "Devengado": 5386.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMPRA DE OTROS BIENES", "especifica_det": "4.SIMBOLOS, DISTINTIVOS Y CONDECORACIONES", "mto_pia": 1500, "mto_pim": 2550, "mto_certificado": 960.0, "mto_compro_anual": 960.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.COMPRA DE OTROS BIENES", "especifica_det": "99.OTROS BIENES", "mto_pia": 5443, "mto_pim": 18295, "mto_certificado": 18292.4, "mto_compro_anual": 18292.4, "Devengado": 14694.4}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.DE OFICINA", "especifica_det": "1.REPUESTOS Y ACCESORIOS", "mto_pia": 13500, "mto_pim": 11824, "mto_certificado": 6092.7, "mto_compro_anual": 6092.7, "Devengado": 2962.7}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.DE OFICINA", "especifica_det": "2.PAPELERIA EN GENERAL, UTILES Y MATERIALES DE OFICINA", "mto_pia": 251160, "mto_pim": 257236, "mto_certificado": 227397.81, "mto_compro_anual": 227397.81, "Devengado": 173031.86}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.ENSERES", "especifica_det": "1.ENSERES", "mto_pia": 135071, "mto_pim": 8743, "mto_certificado": 4300.0, "mto_compro_anual": 4300.0, "Devengado": 2800.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.LOCACI\u00d3N DE SERVICIOS REALIZADOS POR PERSONA NATURAL", "especifica_det": "1.LOCACI\u00d3N DE SERVICIOS REALIZADOS POR PERSONA NATURAL", "mto_pia": 1694513, "mto_pim": 3128554, "mto_certificado": 2758350.0, "mto_compro_anual": 2746350.0, "Devengado": 2118150.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.MATERIALES Y UTILES DE ENSE\u00d1ANZA", "especifica_det": "2.MATERIAL DIDACTICO, ACCESORIOS Y UTILES DE ENSE\u00d1ANZA", "mto_pia": 16170, "mto_pim": 1520, "mto_certificado": 1520.0, "mto_compro_anual": 1520.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.MATERIALES Y UTILES DE ENSE\u00d1ANZA", "especifica_det": "99.OTROS MATERIALES DIVERSOS DE ENSE\u00d1ANZA", "mto_pia": 0, "mto_pim": 500, "mto_certificado": 471.24, "mto_compro_anual": 471.24, "Devengado": 471.24}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.PRODUCTOS FARMACEUTICOS", "especifica_det": "2.MEDICAMENTOS", "mto_pia": 18334, "mto_pim": 519884, "mto_certificado": 517316.01, "mto_compro_anual": 517316.01, "Devengado": 394311.01}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.PRODUCTOS FARMACEUTICOS", "especifica_det": "99.OTROS PRODUCTOS SIMILARES", "mto_pia": 0, "mto_pim": 3345, "mto_certificado": 3344.0, "mto_compro_anual": 3344.0, "Devengado": 3344.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.REPUESTOS Y ACCESORIOS", "especifica_det": "4.DE SEGURIDAD", "mto_pia": 0, "mto_pim": 1104, "mto_certificado": 1104.0, "mto_compro_anual": 1104.0, "Devengado": 1104.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.REPUESTOS Y ACCESORIOS", "especifica_det": "99.OTROS ACCESORIOS Y REPUESTOS", "mto_pia": 0, "mto_pim": 10380, "mto_certificado": 5227.7, "mto_compro_anual": 5227.7, "Devengado": 5227.7}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS ADMINISTRATIVOS", "especifica_det": "2.GASTOS NOTARIALES", "mto_pia": 3500, "mto_pim": 5500, "mto_certificado": 300.0, "mto_compro_anual": 300.0, "Devengado": 300.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS DE CONSULTORIAS Y SIMILARES DESARROLLADOS POR PERSONAS JURIDICAS", "especifica_det": "99.OTROS SERVICIOS SIMILARES", "mto_pia": 2795, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS DE ENERGIA ELECTRICA, AGUA Y GAS", "especifica_det": "1.SERVICIO DE SUMINISTRO DE ENERGIA ELECTRICA", "mto_pia": 271295, "mto_pim": 271295, "mto_certificado": 271295.0, "mto_compro_anual": 267042.9, "Devengado": 215277.5}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS DE ENERGIA ELECTRICA, AGUA Y GAS", "especifica_det": "2.SERVICIO DE AGUA Y DESAGUE", "mto_pia": 171, "mto_pim": 521, "mto_certificado": 521.0, "mto_compro_anual": 521.0, "Devengado": 337.04}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS DE LIMPIEZA, SEGURIDAD Y VIGILANCIA", "especifica_det": "1.SERVICIOS DE LIMPIEZA E HIGIENE", "mto_pia": 52900, "mto_pim": 5000, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SERVICIOS DE LIMPIEZA, SEGURIDAD Y VIGILANCIA", "especifica_det": "2.SERVICIOS DE SEGURIDAD Y VIGILANCIA", "mto_pia": 65079, "mto_pim": 4000, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SUMINISTROS PARA MANTENIMIENTO Y REPARACION", "especifica_det": "1.PARA EDIFICIOS Y ESTRUCTURAS", "mto_pia": 0, "mto_pim": 9992, "mto_certificado": 7578.5, "mto_compro_anual": 7578.5, "Devengado": 6374.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SUMINISTROS PARA MANTENIMIENTO Y REPARACION", "especifica_det": "2.PARA VEHICULOS", "mto_pia": 0, "mto_pim": 32500, "mto_certificado": 7571.96, "mto_compro_anual": 7571.96, "Devengado": 7571.96}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SUMINISTROS PARA MANTENIMIENTO Y REPARACION", "especifica_det": "4.PARA MAQUINARIAS Y EQUIPOS", "mto_pia": 0, "mto_pim": 3580, "mto_certificado": 580.0, "mto_compro_anual": 580.0, "Devengado": 580.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.SUMINISTROS PARA USO AGROPECUARIO, FORESTAL Y VETERINARIO", "especifica_det": "1.SUMINISTROS DE USO ZOOTECNICO", "mto_pia": 1200, "mto_pim": 2200, "mto_certificado": 2200.0, "mto_compro_anual": 2200.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.VESTUARIO, ZAPATERIA Y ACCESORIOS, TALABARTERIA Y MATERIALES TEXTILES", "especifica_det": "1.VESTUARIO, ACCESORIOS Y PRENDAS DIVERSAS", "mto_pia": 106023, "mto_pim": 78001, "mto_certificado": 69466.0, "mto_compro_anual": 69466.0, "Devengado": 45666.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.VESTUARIO, ZAPATERIA Y ACCESORIOS, TALABARTERIA Y MATERIALES TEXTILES", "especifica_det": "2.TEXTILES Y ACABADOS TEXTILES", "mto_pia": 5650, "mto_pim": 9020, "mto_certificado": 9000.0, "mto_compro_anual": 9000.0, "Devengado": 6300.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "1.VESTUARIO, ZAPATERIA Y ACCESORIOS, TALABARTERIA Y MATERIALES TEXTILES", "especifica_det": "3.CALZADO", "mto_pia": 1500, "mto_pim": 2000, "mto_certificado": 1500.0, "mto_compro_anual": 1500.0, "Devengado": 1500.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "10.SERVICIO POR ATENCIONES Y CELEBRACIONES", "especifica_det": "1.SEMINARIOS ,TALLERES Y SIMILARES ORGANIZADOS POR LA  INSTITUCION", "mto_pia": 10800, "mto_pim": 5000, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "11.OTROS SERVICIOS", "especifica_det": "2.TRANSPORTE Y TRASLADO DE CARGA, BIENES Y MATERIALES", "mto_pia": 395166, "mto_pim": 411785, "mto_certificado": 298113.13, "mto_compro_anual": 178113.13, "Devengado": 139793.13}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "11.OTROS SERVICIOS", "especifica_det": "5.SERVICIOS DE ALIMENTACION DE CONSUMO HUMANO", "mto_pia": 199987, "mto_pim": 420115, "mto_certificado": 356814.0, "mto_compro_anual": 356810.0, "Devengado": 163018.5}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "11.OTROS SERVICIOS", "especifica_det": "6.SERVICIO DE IMPRESIONES, ENCUADERNACION Y EMPASTADO", "mto_pia": 93159, "mto_pim": 253662, "mto_certificado": 228231.8, "mto_compro_anual": 227431.8, "Devengado": 220172.8}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "11.OTROS SERVICIOS", "especifica_det": "99.SERVICIOS DIVERSOS", "mto_pia": 67049, "mto_pim": 27319, "mto_certificado": 6170.0, "mto_compro_anual": 6170.0, "Devengado": 6170.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "14.SERVICIOS T\u00c9CNICOS Y PROFESIONALES DESARROLLADOS POR PERSONAS NATURALES", "especifica_det": "98.OTROS SERVICIOS T\u00c9CNICOS Y PROFESIONALES DESARROLLADOS POR PERSONAS NATURALES", "mto_pia": 0, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.DE EDIFICACIONES, OFICINAS Y ESTRUCTURAS", "especifica_det": "1.DE EDIFICACIONES, OFICINAS Y ESTRUCTURAS", "mto_pia": 0, "mto_pim": 47467, "mto_certificado": 39469.0, "mto_compro_anual": 39469.0, "Devengado": 23329.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.MATERIAL,INSUMOS,INSTRUMENTAL Y ACCESORIOS MEDICOS,QUIRURGICOS, ODONTOLOGICOS Y DE LABORATORIO", "especifica_det": "1.MATERIAL, INSUMOS, INSTRUMENTAL Y ACCESORIOS  MEDICOS, QUIRURGICOS, ODONTOLOGICOS Y DE LABORATORIO", "mto_pia": 57258, "mto_pim": 781208, "mto_certificado": 709637.21, "mto_compro_anual": 709637.21, "Devengado": 630988.77}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.SERVICIOS DE TELEFONIA E INTERNET", "especifica_det": "1.SERVICIO DE TELEFONIA MOVIL", "mto_pia": 0, "mto_pim": 3512, "mto_certificado": 2021.28, "mto_compro_anual": 2021.28, "Devengado": 299.02}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.SERVICIOS DE TELEFONIA E INTERNET", "especifica_det": "3.SERVICIO DE INTERNET", "mto_pia": 104465, "mto_pim": 213607, "mto_certificado": 156911.0, "mto_compro_anual": 149831.0, "Devengado": 112626.19}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.VIAJES DOMESTICOS", "especifica_det": "1.PASAJES Y GASTOS DE TRANSPORTE", "mto_pia": 38191, "mto_pim": 21006, "mto_certificado": 9189.6, "mto_compro_anual": 8890.6, "Devengado": 8850.6}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.VIAJES DOMESTICOS", "especifica_det": "2.VIATICOS Y ASIGNACIONES POR COMISION DE SERVICIO", "mto_pia": 206712, "mto_pim": 296151, "mto_certificado": 258530.0, "mto_compro_anual": 256861.9, "Devengado": 256421.9}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "2.VIAJES DOMESTICOS", "especifica_det": "99.OTROS GASTOS", "mto_pia": 179478, "mto_pim": 108568, "mto_certificado": 91519.0, "mto_compro_anual": 33606.0, "Devengado": 31351.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.ASEO, LIMPIEZA Y COCINA", "especifica_det": "1.ASEO, LIMPIEZA Y TOCADOR", "mto_pia": 306737, "mto_pim": 319518, "mto_certificado": 287254.63, "mto_compro_anual": 287254.63, "Devengado": 286664.5}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.ASEO, LIMPIEZA Y COCINA", "especifica_det": "2.DE COCINA, COMEDOR Y CAFETERIA", "mto_pia": 10943, "mto_pim": 4000, "mto_certificado": 1150.0, "mto_compro_anual": 1150.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.SEGUROS", "especifica_det": "2.SEGURO DE VEHICULOS", "mto_pia": 0, "mto_pim": 2000, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.SEGUROS", "especifica_det": "3.SEGURO OBLIGATORIO ACCIDENTES DE TRANSITO (SOAT)", "mto_pia": 6250, "mto_pim": 11640, "mto_certificado": 4320.0, "mto_compro_anual": 4320.0, "Devengado": 4320.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.SERVICIOS DE MENSAJERIA, TELECOMUNICACIONES Y OTROS AFINES", "especifica_det": "1.CORREOS Y SERVICIOS DE MENSAJERIA", "mto_pia": 700, "mto_pim": 2000, "mto_certificado": 2000.0, "mto_compro_anual": 2000.0, "Devengado": 2000.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "3.SERVICIOS DE MENSAJERIA, TELECOMUNICACIONES Y OTROS AFINES", "especifica_det": "99.OTROS SERVICIOS DE COMUNICACION", "mto_pia": 300, "mto_pim": 300, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "4.ELECTRICIDAD, ILUMINACION Y ELECTRONICA", "especifica_det": "1.ELECTRICIDAD, ILUMINACION Y ELECTRONICA", "mto_pia": 37185, "mto_pim": 38980, "mto_certificado": 23601.5, "mto_compro_anual": 23601.5, "Devengado": 21781.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "4.SERVICIO DE PUBLICIDAD, IMPRESIONES, DIFUSION E IMAGEN INSTITUCIONAL", "especifica_det": "1.SERVICIO DE PUBLICIDAD", "mto_pia": 14673, "mto_pim": 14673, "mto_certificado": 14673.0, "mto_compro_anual": 14673.0, "Devengado": 3460.9}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "4.SERVICIO DE PUBLICIDAD, IMPRESIONES, DIFUSION E IMAGEN INSTITUCIONAL", "especifica_det": "3.SERVICIOS DE IMAGEN INSTITUCIONAL", "mto_pia": 0, "mto_pim": 400, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "4.SERVICIOS DE SALUD", "especifica_det": "1.GASTOS POR PRESTACIONES DE SALUD", "mto_pia": 2500, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "5.DE VEHICULOS", "especifica_det": "1.DE VEHICULOS", "mto_pia": 54280, "mto_pim": 283603, "mto_certificado": 241351.0, "mto_compro_anual": 241351.0, "Devengado": 194921.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "7.DE MAQUINARIAS Y EQUIPOS", "especifica_det": "1.DE MAQUINARIAS Y EQUIPOS", "mto_pia": 0, "mto_pim": 17640, "mto_certificado": 12531.3, "mto_compro_anual": 12531.3, "Devengado": 11281.3}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "3.BIENES Y SERVICIOS", "especifica": "8.SERVICIOS RELACIONADOS CON SANEAMIENTO REALIZADO POR PERSONAS JUR\u00cdDICAS", "especifica_det": "1.SERVICIOS RELACIONADOS CON EL TRATAMIENTO DE AGUA", "mto_pia": 46966, "mto_pim": 49566, "mto_certificado": 46554.99, "mto_compro_anual": 46554.99, "Devengado": 46554.99}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "5.OTROS GASTOS", "especifica": "1.IMPUESTOS", "especifica_det": "1.IMPUESTOS", "mto_pia": 0, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "5.OTROS GASTOS", "especifica": "1.TRANSFERENCIAS CORRIENTES", "especifica_det": "99.A OTRAS ORGANIZACIONES", "mto_pia": 268031, "mto_pim": 16031, "mto_certificado": 2909.75, "mto_compro_anual": 2909.75, "Devengado": 2909.75}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "5.OTROS GASTOS", "especifica": "2.DERECHOS ADMINISTRATIVOS", "especifica_det": "1.DERECHOS ADMINISTRATIVOS", "mto_pia": 0, "mto_pim": 2000, "mto_certificado": 900.0, "mto_compro_anual": 900.0, "Devengado": 900.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "1.ADQUISICION DE VEHICULOS", "especifica_det": "1.PARA TRANSPORTE TERRESTRE", "mto_pia": 0, "mto_pim": 0, "mto_certificado": 0.0, "mto_compro_anual": 0.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "1.PARA OFICINA", "especifica_det": "1.MAQUINAS Y EQUIPOS", "mto_pia": 0, "mto_pim": 13752, "mto_certificado": 13751.32, "mto_compro_anual": 13751.32, "Devengado": 13751.32}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "1.PARA OFICINA", "especifica_det": "2.MOBILIARIO", "mto_pia": 0, "mto_pim": 65325, "mto_certificado": 63931.0, "mto_compro_anual": 63931.0, "Devengado": 22491.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "2.PARA INSTALACIONES EDUCATIVAS", "especifica_det": "1.MAQUINAS Y EQUIPOS", "mto_pia": 0, "mto_pim": 1000, "mto_certificado": 1000.0, "mto_compro_anual": 1000.0, "Devengado": 1000.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "3.ACTIVOS INTANGIBLES", "especifica_det": "2.SOFTWARES", "mto_pia": 0, "mto_pim": 18998, "mto_certificado": 18998.0, "mto_compro_anual": 18998.0, "Devengado": 0.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "3.ADQUISICION DE EQUIPOS INFORMATICOS Y DE COMUNICACIONES", "especifica_det": "1.EQUIPOS COMPUTACIONALES Y PERIFERICOS", "mto_pia": 0, "mto_pim": 134114, "mto_certificado": 133731.23, "mto_compro_anual": 128146.92, "Devengado": 125880.16}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "3.ADQUISICION DE EQUIPOS INFORMATICOS Y DE COMUNICACIONES", "especifica_det": "2.EQUIPOS DE COMUNICACIONES PARA REDES INFORMATICAS", "mto_pia": 0, "mto_pim": 200, "mto_certificado": 200.0, "mto_compro_anual": 200.0, "Devengado": 200.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "3.ADQUISICION DE EQUIPOS INFORMATICOS Y DE COMUNICACIONES", "especifica_det": "3.EQUIPOS DE TELECOMUNICACIONES", "mto_pia": 0, "mto_pim": 944, "mto_certificado": 943.8, "mto_compro_anual": 943.8, "Devengado": 390.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "4.ADQUISICION DE MOBILIARIO, EQUIPOS Y APARATOS MEDICOS", "especifica_det": "1.MOBILIARIO", "mto_pia": 0, "mto_pim": 18125, "mto_certificado": 17925.0, "mto_compro_anual": 17925.0, "Devengado": 10850.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "4.ADQUISICION DE MOBILIARIO, EQUIPOS Y APARATOS MEDICOS", "especifica_det": "2.EQUIPOS", "mto_pia": 0, "mto_pim": 136480, "mto_certificado": 136480.0, "mto_compro_anual": 46480.0, "Devengado": 46480.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "9.ADQUISICION DE MAQUINARIA Y EQUIPO DIVERSOS", "especifica_det": "1.AIRE ACONDICIONADO Y REFRIGERACION", "mto_pia": 0, "mto_pim": 42100, "mto_certificado": 42000.0, "mto_compro_anual": 42000.0, "Devengado": 33900.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "9.ADQUISICION DE MAQUINARIA Y EQUIPO DIVERSOS", "especifica_det": "2.ASEO,  LIMPIEZA Y COCINA", "mto_pia": 0, "mto_pim": 300, "mto_certificado": 300.0, "mto_compro_anual": 300.0, "Devengado": 300.0}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "9.ADQUISICION DE MAQUINARIA Y EQUIPO DIVERSOS", "especifica_det": "4.ELECTRICIDAD Y ELECTRONICA", "mto_pia": 0, "mto_pim": 22691, "mto_certificado": 22690.13, "mto_compro_anual": 22690.13, "Devengado": 12161.6}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "9.ADQUISICION DE MAQUINARIA Y EQUIPO DIVERSOS", "especifica_det": "5.EQUIPOS E INSTRUMENTOS DE MEDICION", "mto_pia": 0, "mto_pim": 26562, "mto_certificado": 25351.440000000002, "mto_compro_anual": 25351.440000000002, "Devengado": 25131.440000000002}, {"unidad_ejecutora": "412. GOB. REG. DPTO. CAJAMARCA - RED DE SALUD CAJABAMBA", "generica": "6.ADQUISICION DE ACTIVOS NO FINANCIEROS", "especifica": "9.ADQUISICION DE MAQUINARIA Y EQUIPO DIVERSOS", "especifica_det": "99.MAQUINARIAS, EQUIPOS Y MOBILIARIOS DE OTRAS INSTALACIONES", "mto_pia": 0, "mto_pim": 7550, "mto_certificado": 7549.5, "mto_compro_anual": 7549.5, "Devengado": 6899.5}];
         
         const formatCurrency = (val) => new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 }).format(val);
         const formatPercent = (val) => (val * 100).toFixed(2) + '%';
+        const formatMillions = (val) => (val / 1000000).toFixed(2) + 'M';
         
         const getSemaforoHTML = (pct) => {
             if (pct >= 0.75) return '<span class="dot green"></span>';
@@ -352,31 +304,45 @@
             return '<span class="dot red"></span>';
         };
 
+        let chartBarGen = null;
+        let chartGauge = null;
+        let chartHBarEsp = null;
+
         function initDashboard() {
             const ues = [...new Set(rawData.map(item => item.unidad_ejecutora))].sort();
+            
             const ueSelect4 = document.getElementById('ue-filter');
             const ueSelect3 = document.getElementById('slide3-ue-filter');
-            
             ues.forEach(ue => {
-                let opt4 = document.createElement('option');
-                opt4.value = ue; opt4.innerHTML = ue;
-                ueSelect4.appendChild(opt4);
-                
-                let opt3 = document.createElement('option');
-                opt3.value = ue; opt3.innerHTML = ue;
-                ueSelect3.appendChild(opt3);
+                let opt4 = document.createElement('option'); opt4.value = ue; opt4.innerHTML = ue; ueSelect4.appendChild(opt4);
+                let opt3 = document.createElement('option'); opt3.value = ue; opt3.innerHTML = ue; ueSelect3.appendChild(opt3);
             });
             
             const gens = [...new Set(rawData.map(item => item.generica))].sort();
             const genSelect = document.getElementById('gen-filter');
             gens.forEach(gen => {
-                let opt = document.createElement('option');
-                opt.value = gen; opt.innerHTML = gen;
-                genSelect.appendChild(opt);
+                let opt = document.createElement('option'); opt.value = gen; opt.innerHTML = gen; genSelect.appendChild(opt);
             });
             
+            const modernFilterContainer = document.getElementById('modern-filter-container');
+            let btnAll = document.createElement('button');
+            btnAll.className = 'btn-modern-filter active';
+            btnAll.innerText = 'CONSOLIDADO DIRESA';
+            btnAll.onclick = (e) => selectModernUE('ALL', e.target);
+            modernFilterContainer.appendChild(btnAll);
+
+            ues.forEach(ue => {
+                let btn = document.createElement('button');
+                btn.className = 'btn-modern-filter';
+                let shortCode = ue.split('.')[0];
+                btn.innerText = "UE " + shortCode;
+                btn.onclick = (e) => selectModernUE(ue, e.target);
+                modernFilterContainer.appendChild(btn);
+            });
+
             updateSlide3();
             updateSlide4();
+            updateModernDashboard('ALL');
         }
         
         function resetFilters() {
@@ -385,107 +351,170 @@
             updateSlide4();
         }
         
-        // Update Section 3 (Genérica)
+        function selectModernUE(ue, btnElement) {
+            document.querySelectorAll('.btn-modern-filter').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            updateModernDashboard(ue);
+        }
+
+        function updateModernDashboard(ue) {
+            let data = rawData;
+            if (ue !== 'ALL') {
+                data = rawData.filter(item => item.unidad_ejecutora === ue);
+            }
+
+            let sumPia=0, sumPim=0, sumCert=0, sumDev=0;
+            let genAgg = {};
+            let espAgg = {};
+
+            data.forEach(r => {
+                let p = r.mto_pia||0, pm = r.mto_pim||0, c = r.mto_certificado||0, d = r.Devengado||0;
+                sumPia += p; sumPim += pm; sumCert += c; sumDev += d;
+
+                let gKey = r.generica;
+                if(!genAgg[gKey]) genAgg[gKey] = {pim:0, dev:0};
+                genAgg[gKey].pim += pm; genAgg[gKey].dev += d;
+
+                let eKey = r.especifica;
+                if(!espAgg[eKey]) espAgg[eKey] = {dev:0};
+                espAgg[eKey].dev += d;
+            });
+
+            document.getElementById('m-pia').innerText = formatMillions(sumPia);
+            document.getElementById('m-pim').innerText = formatMillions(sumPim);
+            document.getElementById('m-cert').innerText = formatMillions(sumCert);
+            document.getElementById('m-dev').innerText = formatMillions(sumDev);
+            document.getElementById('m-saldo').innerText = formatMillions(sumPim - sumDev);
+
+            let genLabels = Object.keys(genAgg).map(k => k.substring(0, 15) + "...");
+            let genPimData = Object.values(genAgg).map(v => v.pim);
+            let genDevData = Object.values(genAgg).map(v => v.dev);
+
+            if(chartBarGen) chartBarGen.destroy();
+            const ctxGen = document.getElementById('barChartGenericas').getContext('2d');
+            chartBarGen = new Chart(ctxGen, {
+                type: 'bar',
+                data: {
+                    labels: genLabels,
+                    datasets: [
+                        { label: 'PIM', data: genPimData, backgroundColor: '#e0e0e0' },
+                        { label: 'Devengado', data: genDevData, backgroundColor: '#81d4fa' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { 
+                        title: { display: true, text: 'PIM vs Devengado por Genérica' },
+                        datalabels: { display: false } 
+                    },
+                    scales: { y: { beginAtZero: true, ticks: { callback: function(val) { return (val/1000000)+'M'; } } } }
+                }
+            });
+
+            let pctTotal = sumPim > 0 ? (sumDev / sumPim) * 100 : 0;
+            document.getElementById('gauge-text').innerText = pctTotal.toFixed(1) + '%';
+            
+            let gaugeColor = '#dc3545';
+            if(pctTotal >= 75) gaugeColor = '#28a745';
+            else if(pctTotal >= 50) gaugeColor = '#ffc107';
+
+            if(chartGauge) chartGauge.destroy();
+            const ctxGauge = document.getElementById('gaugeChartAvance').getContext('2d');
+            chartGauge = new Chart(ctxGauge, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ejecutado', 'Saldo'],
+                    datasets: [{
+                        data: [pctTotal, 100 - pctTotal],
+                        backgroundColor: [gaugeColor, '#f4f6f9'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    circumference: 180, rotation: 270, cutout: '75%',
+                    plugins: { legend: { display: false }, tooltip: { enabled: false }, datalabels: { display: false } }
+                }
+            });
+
+            let espSorted = Object.entries(espAgg).sort((a,b) => b[1].dev - a[1].dev).slice(0,5);
+            let espLabels = espSorted.map(e => e[0].substring(0, 30) + "...");
+            let espDevData = espSorted.map(e => e[1].dev);
+
+            if(chartHBarEsp) chartHBarEsp.destroy();
+            const ctxEsp = document.getElementById('hbarChartEspecificas').getContext('2d');
+            chartHBarEsp = new Chart(ctxEsp, {
+                type: 'bar',
+                data: {
+                    labels: espLabels,
+                    datasets: [{
+                        label: 'Devengado S/', data: espDevData, backgroundColor: '#0277bd', borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Top 5 Específicas con Mayor Ejecución' },
+                        datalabels: { 
+                            display: true, color: 'white', align: 'start', anchor: 'end',
+                            formatter: function(value) { return formatMillions(value); }
+                        }
+                    },
+                    scales: { x: { ticks: { display: false }, grid: { display: false } } }
+                }
+            });
+        }
+
         function updateSlide3() {
             const selectedUE = document.getElementById('slide3-ue-filter').value;
             let filteredData = rawData;
             if (selectedUE !== 'ALL') {
                 filteredData = rawData.filter(item => item.unidad_ejecutora === selectedUE);
             }
-            
             let tableData = {};
             filteredData.forEach(row => {
                 let key = row.generica;
                 if(!tableData[key]) { tableData[key] = { pia: 0, pim: 0, cert: 0, dev: 0 }; }
-                tableData[key].pia += row.mto_pia || 0;
-                tableData[key].pim += row.mto_pim || 0;
-                tableData[key].cert += row.mto_certificado || 0;
-                tableData[key].dev += row.Devengado || 0;
+                tableData[key].pia += row.mto_pia || 0; tableData[key].pim += row.mto_pim || 0; tableData[key].cert += row.mto_certificado || 0; tableData[key].dev += row.Devengado || 0;
             });
-            
             const tbody = document.getElementById('slide3-tbody');
             tbody.innerHTML = '';
-            
             let sortedKeys = Object.keys(tableData).sort();
             sortedKeys.forEach(key => {
-                const row = tableData[key];
-                const pct = row.pim > 0 ? (row.dev / row.pim) : 0;
+                const row = tableData[key]; const pct = row.pim > 0 ? (row.dev / row.pim) : 0;
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td style="text-align:left;">${key}</td>
-                    <td>${formatCurrency(row.pia)}</td>
-                    <td>${formatCurrency(row.pim)}</td>
-                    <td>${formatCurrency(row.cert)}</td>
-                    <td>${formatCurrency(row.dev)}</td>
-                    <td style="display:flex; justify-content:flex-end; align-items:center; border:none;">
-                        <span style="font-weight:600; margin-right:5px;">${formatPercent(pct)}</span> ${getSemaforoHTML(pct)}
-                    </td>
+                    <td style="text-align:left;">${key}</td><td>${formatCurrency(row.pia)}</td><td>${formatCurrency(row.pim)}</td><td>${formatCurrency(row.cert)}</td><td>${formatCurrency(row.dev)}</td>
+                    <td style="display:flex; justify-content:flex-end; align-items:center; border:none;"><span style="font-weight:600; margin-right:5px;">${formatPercent(pct)}</span> ${getSemaforoHTML(pct)}</td>
                 `;
                 tbody.appendChild(tr);
             });
-            if (sortedKeys.length === 0) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay datos para mostrar.</td></tr>';
         }
 
-        // Update Section 4 (Específica)
         function updateSlide4() {
             const selectedUE = document.getElementById('ue-filter').value;
             const selectedGen = document.getElementById('gen-filter').value;
-            
             let filteredData = rawData.filter(item => {
-                const matchUE = selectedUE === 'ALL' || item.unidad_ejecutora === selectedUE;
-                const matchGen = selectedGen === 'ALL' || item.generica === selectedGen;
-                return matchUE && matchGen;
+                return (selectedUE === 'ALL' || item.unidad_ejecutora === selectedUE) && (selectedGen === 'ALL' || item.generica === selectedGen);
             });
-            
-            let totalPIA = 0, totalPIM = 0, totalCert = 0, totalDev = 0;
             let tableData = {};
-            
             filteredData.forEach(row => {
-                totalPIA += row.mto_pia || 0;
-                totalPIM += row.mto_pim || 0;
-                totalCert += row.mto_certificado || 0;
-                totalDev += row.Devengado || 0;
-                
                 let key = row.especifica;
                 if(!tableData[key]) { tableData[key] = { pia: 0, pim: 0, cert: 0, dev: 0 }; }
-                tableData[key].pia += row.mto_pia || 0;
-                tableData[key].pim += row.mto_pim || 0;
-                tableData[key].cert += row.mto_certificado || 0;
-                tableData[key].dev += row.Devengado || 0;
+                tableData[key].pia += row.mto_pia || 0; tableData[key].pim += row.mto_pim || 0; tableData[key].cert += row.mto_certificado || 0; tableData[key].dev += row.Devengado || 0;
             });
-            
-            document.getElementById('kpi-pia').innerText = formatCurrency(totalPIA);
-            document.getElementById('kpi-pim').innerText = formatCurrency(totalPIM);
-            document.getElementById('kpi-cert').innerText = formatCurrency(totalCert);
-            document.getElementById('kpi-dev').innerText = formatCurrency(totalDev);
-            document.getElementById('kpi-saldo').innerText = formatCurrency(totalPIM - totalDev);
-            
-            const certPct = totalPIM > 0 ? (totalCert / totalPIM) : 0;
-            const devPct = totalPIM > 0 ? (totalDev / totalPIM) : 0;
-            document.getElementById('kpi-cert-pct').innerText = formatPercent(certPct) + ' del PIM';
-            document.getElementById('kpi-dev-pct').innerText = formatPercent(devPct) + ' del PIM';
-            
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
-            
             let sortedKeys = Object.keys(tableData).sort();
             sortedKeys.forEach(key => {
-                const row = tableData[key];
-                const pct = row.pim > 0 ? (row.dev / row.pim) : 0;
+                const row = tableData[key]; const pct = row.pim > 0 ? (row.dev / row.pim) : 0;
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${key}</td>
-                    <td>${formatCurrency(row.pia)}</td>
-                    <td>${formatCurrency(row.pim)}</td>
-                    <td>${formatCurrency(row.cert)}</td>
-                    <td>${formatCurrency(row.dev)}</td>
-                    <td style="display:flex; justify-content:flex-end; align-items:center; border:none;">
-                        <span style="font-weight:600; margin-right:5px;">${formatPercent(pct)}</span> ${getSemaforoHTML(pct)}
-                    </td>
+                    <td>${key}</td><td>${formatCurrency(row.pia)}</td><td>${formatCurrency(row.pim)}</td><td>${formatCurrency(row.cert)}</td><td>${formatCurrency(row.dev)}</td>
+                    <td style="display:flex; justify-content:flex-end; align-items:center; border:none;"><span style="font-weight:600; margin-right:5px;">${formatPercent(pct)}</span> ${getSemaforoHTML(pct)}</td>
                 `;
                 tbody.appendChild(tr);
             });
-            if (sortedKeys.length === 0) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay datos para mostrar.</td></tr>';
         }
         
         window.addEventListener('load', initDashboard);
