@@ -73,8 +73,8 @@
         .filter-group select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; outline: none; cursor: pointer; background: white; }
         .reset-btn { background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: auto; height: 40px; }
 
-        .modern-filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; }
-        .btn-modern-filter { background-color: #b3e5fc; color: #01579b; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 14px; flex-grow: 1; text-align: center; }
+        .modern-filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; justify-content: center; }
+        .btn-modern-filter { background-color: #b3e5fc; color: #01579b; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 14px; text-align: center; }
         .btn-modern-filter:hover { background-color: #81d4fa; }
         .btn-modern-filter.active { background-color: #0277bd; color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
@@ -128,8 +128,8 @@
         <!-- SECCIÓN 1: PORTADA -->
         <div class="section-cover" id="portada">
             <div id="cover-logo-container">
-                <img src="https://i.postimg.cc/9M4Z4w6n/gobierno-regional.png" alt="Gobierno Regional Cajamarca Logo" class="cover-logo" id="logo-gr">
-                <img src="https://i.postimg.cc/85z1zQ7B/diresa.png" alt="Dirección Regional de Salud Cajamarca Logo" class="cover-logo" id="logo-diresa">
+                <img src="logo-gr.png" alt="Gobierno Regional Cajamarca Logo" class="cover-logo" id="logo-gr">
+                <img src="logo-diresa.png" alt="Dirección Regional de Salud Cajamarca Logo" class="cover-logo" id="logo-diresa">
             </div>
             <h1>Ejecución Presupuestal 2026</h1>
             <h2>Dirección Regional de Salud Cajamarca</h2>
@@ -290,8 +290,8 @@
         const formatMillions = (val) => (val / 1000000).toFixed(2) + 'M';
         
         const getSemaforoHTML = (pct) => {
-            if (pct >= 75) return '<span class="dot green"></span>';
-            if (pct >= 50) return '<span class="dot yellow"></span>';
+            if (pct >= 0.75) return '<span class="dot green"></span>';
+            if (pct >= 0.50) return '<span class="dot yellow"></span>';
             return '<span class="dot red"></span>';
         };
 
